@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importador de CNPJ RFB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(to right, #4CA1AF, #2C3E50);
+            min-height: 100vh;
+            padding: 24px;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .glass-box {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section label {
+            display: block;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 14px;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(76, 161, 175, 0.1);
+        }
+
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: #3B82F6;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #10B981;
+            color: white;
+            padding: 12px 24px;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background: #EF4444;
+            color: white;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+            transform: translateY(-1px);
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .retry-progress-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .retry-progress-container.active {
+            display: block;
+        }
+
+        .retry-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .retry-progress-title {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .retry-progress-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .retry-progress-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .retry-progress-stat-label {
+            font-weight: 600;
+        }
+
+        .retry-progress-stat-value {
+            color: #10B981;
+            font-weight: 700;
+        }
+
+        .retry-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .retry-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3B82F6, #10B981);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .retry-progress-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-align: center;
+        }
+
+                .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #059669);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .table-section {
+            margin-top: 0;
+        }
+
+        .table-header {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .table-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.3px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .table-header .count-badge {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            table-layout: fixed;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0;
+            text-align: left;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            border-bottom: 0.3px solid rgba(255, 255, 255, 0.12);
+            font-size: 13px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+            position: relative;
+            user-select: none;
+        }
+
+        .th-content {
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .th-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .th-search {
+            width: 100%;
+        }
+
+        .th-search input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .th-search input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .th-search input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(76, 161, 175, 0.2);
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .resize-handle:hover {
+            background: rgba(76, 161, 175, 0.6);
+        }
+
+        .resize-handle.resizing {
+            background: rgba(76, 161, 175, 0.8);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 0.3px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            overflow: visible;
+            white-space: normal;
+            font-weight: 500;
+            word-wrap: break-word;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        td input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        td input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(76, 161, 175, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-header {
+            margin-bottom: 28px;
+        }
+
+        .modal-header h2 {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .modal-header p {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .separator-options {
+            margin-bottom: 28px;
+        }
+
+        .separator-option {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .separator-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .separator-option input[type="radio"] {
+            margin-right: 14px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: #10B981;
+        }
+
+        .separator-label {
+            flex: 1;
+        }
+
+        .separator-label .label-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .separator-label .label-desc {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 22px;
+            font-weight: 600;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            max-width: 320px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success {
+            border-left: 4px solid #10B981;
+        }
+
+        .toast.error {
+            border-left: 4px solid #EF4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .table-actions {
+            text-align: center;
+            cursor: default;
+        }
+
+        .table-actions button:hover {
+            transform: translateY(-2px);
+        }
+
+        .failed-imports-section {
+            margin-top: 28px;
+        }
+
+        .failed-imports-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .failed-imports-section .count-badge {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .failed-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border: 0.3px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .failed-item {
+            background: transparent;
+            border: none;
+            border-bottom: 0.3px solid rgba(239, 68, 68, 0.15);
+            border-radius: 0;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .failed-item:last-child {
+            border-bottom: none;
+        }
+
+        .failed-item:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .failed-item-info {
+            flex: 1;
+        }
+
+        .failed-item-cnpj {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.3px;
+        }
+
+        .failed-item-error {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .failed-item-retry {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .failed-item-retry:hover {
+            background: #2563EB;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .glass-box {
+                padding: 24px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .modal-content {
+                padding: 28px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .table-header button {
+                width: 100%;
+            }
+
+            .failed-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Importador de CNPJ</h1>
+            <p>Consulte dados de empresas da Receita Federal do Brasil</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="glass-box input-section">
+            <label>Insira os CNPJs (um por linha ou separados por vírgula)</label>
+            <textarea id="cnpjInput" placeholder="00.000.000/0000-00 ou 00000000000000"></textarea>
+
+            <div class="retry-progress-container" id="retryProgressContainer">
+                <div class="retry-progress-header">
+                    <div class="retry-progress-title">Tentando importar CNPJs com erro...</div>
+                    <div class="retry-progress-stats">
+                        <div class="retry-progress-stat">
+                            <span class="retry-progress-stat-label">Tentativa:</span>
+                            <span class="retry-progress-stat-value" id="retryAttempt">0</span>/10
+                        </div>
+                        <div class="retry-progress-stat">
+                            <span class="retry-progress-stat-label">Pendentes:</span>
+                            <span class="retry-progress-stat-value" id="retryPending">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="retry-progress-bar">
+                    <div class="retry-progress-fill" id="retryProgressFill"></div>
+                </div>
+                <div class="retry-progress-text" id="retryProgressText">Aguardando...</div>
+            </div>
+
+                        <div class="progress-container" id="progressContainer">
+                <div class="progress-text">Importando... <span id="progressPercent">0</span>%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="importBtn" onclick="handleImport()">Importar</button>
+        </div>
+
+        <!-- Table Section -->
+        <div id="tableSection" style="display: none;">
+            <div class="glass-box table-section">
+                <div class="table-header">
+                    <h2>
+                        Dados Importados
+                        <span class="count-badge" id="dataCountBadge">0</span>
+                    </h2>
+                    <button class="btn-secondary" onclick="openExportModal()">Salvar em TXT</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead>
+                            <tr id="headerRow"></tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="glass-box">
+            <div class="empty-state">
+                Nenhum dado importado. Insira CNPJs acima e clique em "Importar"
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Exportar Dados para TXT</h2>
+                <p>Selecione o separador desejado para o arquivo de exportação</p>
+            </div>
+
+            <div class="separator-options">
+                <label class="separator-option">
+                    <input type="radio" name="separator" value="," checked>
+                    <div class="separator-label">
+                        <div class="label-title">Vírgula</div>
+                        <div class="label-desc">Separador padrão CSV</div>
+                    </div>
+                </label>
+
+                <label class="separator-option">
+                    <input type="radio" name="separator" value=";">
+                    <div class="separator-label">
+                        <div class="label-title">Ponto-e-vírgula</div>
+                        <div class="label-desc">Comum em locales europeus</div>
+                    </div>
+                </label>
+
+                <label class="separator-option">
+                    <input type="radio" name="separator" value="	">
+                    <div class="separator-label">
+                        <div class="label-title">Tabulação</div>
+                        <div class="label-desc">Separador por tab</div>
+                    </div>
+                </label>
+
+                <label class="separator-option">
+                    <input type="radio" name="separator" value="|">
+                    <div class="separator-label">
+                        <div class="label-title">Pipe (|)</div>
+                        <div class="label-desc">Separador por barra vertical</div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="progress-container" id="exportProgressContainer">
+                <div class="progress-text">Gerando arquivo... <span id="exportProgressPercent">0</span>%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="exportProgressFill"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeExportModal()">Cancelar</button>
+                <button class="btn-secondary" id="exportBtn" onclick="handleExport()">Exportar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Colunas da tabela
+        const columns = ['cnpj', 'nome', 'fantasia', 'situacao', 'abertura', 'municipio', 'uf', 'email', 'telefone', 'acao'];
+        const columnLabels = ['CNPJ', 'Razão Social', 'Nome Fantasia', 'Situação', 'Data Abertura', 'Município', 'UF', 'Email', 'Telefone', 'Ação'];
+        const columnWidths = {};
+
+        // Inicializar larguras padrão
+        columns.forEach((col, idx) => {
+            if (idx === columns.length - 1) {
+                columnWidths[col] = 100; // Ação
+            } else if (col === 'nome' || col === 'fantasia') {
+                columnWidths[col] = 220; // Razão Social e Nome Fantasia
+            } else if (col === 'municipio') {
+                columnWidths[col] = 180;
+            } else {
+                columnWidths[col] = 160;
+            }
+        });
+
+        // Formatar CNPJ
+        function formatCNPJ(cnpj) {
+            const cleanCnpj = cnpj.replace(/\D/g, '');
+            if (cleanCnpj.length !== 14) {
+                return cnpj;
+            }
+            return `${cleanCnpj.substring(0, 2)}.${cleanCnpj.substring(2, 5)}.${cleanCnpj.substring(5, 8)}/${cleanCnpj.substring(8, 12)}-${cleanCnpj.substring(12)}`;
+        }
+
+        // Parse input
+        function parseCNPJInput(input) {
+            return input
+                .split(/[\n,;]/)
+                .map(cnpj => cnpj.trim())
+                .filter(cnpj => cnpj.length > 0);
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Data storage
+        let importedData = [];
+        let filteredData = [];
+        let failedImports = [];
+
+        // Fetch CNPJ data com retry
+        async function fetchCNPJData(cnpj, retries = 3) {
+            const cleanCnpj = cnpj.replace(/\D/g, '');
+            
+            if (cleanCnpj.length !== 14) {
+                throw new Error('CNPJ deve ter 14 dígitos');
+            }
+
+            const proxies = [
+                `https://api.allorigins.win/raw?url=https://www.receitaws.com.br/v1/cnpj/${cleanCnpj}`,
+                `https://www.receitaws.com.br/v1/cnpj/${cleanCnpj}`
+            ];
+
+            let lastError = null;
+            let isConnectionError = false;
+
+            for (const proxyUrl of proxies) {
+                for (let attempt = 1; attempt <= retries; attempt++) {
+                    try {
+                        const response = await fetch(proxyUrl, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            return data;
+                        } else if (response.status === 404 || response.status === 400) {
+                            lastError = `HTTP ${response.status}`;
+                            isConnectionError = false;
+                            break;
+                        } else {
+                            lastError = `HTTP ${response.status}`;
+                            isConnectionError = true;
+                            if (attempt < retries) {
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                        }
+                    } catch (error) {
+                        lastError = error.message;
+                        isConnectionError = true;
+                        if (attempt < retries) {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    }
+                }
+                
+                if (!isConnectionError) {
+                    break;
+                }
+            }
+
+            throw new Error(`Falha ao consultar API: ${lastError}`);
+        }
+
+        // Handle import
+        async function handleImport() {
+            const input = document.getElementById('cnpjInput').value.trim();
+
+            if (!input) {
+                showToast('Por favor, insira pelo menos um CNPJ', 'error');
+                return;
+            }
+
+            const cnpjs = parseCNPJInput(input);
+
+            if (cnpjs.length === 0) {
+                showToast('Nenhum CNPJ encontrado', 'error');
+                return;
+            }
+
+            const importBtn = document.getElementById('importBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            importBtn.disabled = true;
+            progressContainer.classList.add('active');
+
+            const totalCnpjs = cnpjs.length;
+            let successCount = 0;
+            failedImports = [];
+            let pendingRetries = [];
+
+            // Primeira tentativa
+            for (let i = 0; i < cnpjs.length; i++) {
+                try {
+                    const cnpj = cnpjs[i];
+                    console.log(`Tentando importar CNPJ: ${cnpj}`);
+                    
+                    const data = await fetchCNPJData(cnpj);
+
+                    if (data && data.status === 'OK') {
+                        importedData.push({
+                            ...data,
+                            id: `${data.cnpj}-${Date.now()}-${i}`
+                        });
+                        showToast(`CNPJ ${formatCNPJ(cnpj)} importado com sucesso`);
+                        successCount++;
+                    } else if (data && data.message) {
+                        failedImports.push({
+                            cnpj: cnpj,
+                            error: data.message
+                        });
+                    } else {
+                        pendingRetries.push({
+                            cnpj: cnpj,
+                            error: 'Nao encontrado na base de dados',
+                            attempts: 1
+                        });
+                    }
+                } catch (error) {
+                    const cnpj = cnpjs[i];
+                    pendingRetries.push({
+                        cnpj: cnpj,
+                        error: error.message,
+                        attempts: 1
+                    });
+                }
+
+                const progress = ((i + 1) / totalCnpjs) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressPercent').textContent = Math.round(progress);
+            }
+
+            // Retry automatico ate 10 tentativas
+            const retryProgressContainer = document.getElementById('retryProgressContainer');
+            
+            if (pendingRetries.length > 0) {
+                retryProgressContainer.classList.add('active');
+            }
+
+            while (pendingRetries.length > 0) {
+                const retryItem = pendingRetries.shift();
+                
+                if (retryItem.attempts >= 10) {
+                    failedImports.push({
+                        cnpj: retryItem.cnpj,
+                        error: `${retryItem.error} (10 tentativas)`
+                    });
+                    continue;
+                }
+
+                try {
+                    console.log(`Tentativa ${retryItem.attempts + 1} para CNPJ: ${retryItem.cnpj}`);
+                    const data = await fetchCNPJData(retryItem.cnpj);
+
+                    if (data && data.status === 'OK') {
+                        importedData.push({
+                            ...data,
+                            id: `${data.cnpj}-${Date.now()}-retry-${retryItem.attempts}`
+                        });
+                        showToast(`CNPJ ${formatCNPJ(retryItem.cnpj)} importado com sucesso (tentativa ${retryItem.attempts + 1})`);
+                        successCount++;
+                    } else if (data && data.message) {
+                        failedImports.push({
+                            cnpj: retryItem.cnpj,
+                            error: data.message
+                        });
+                    } else {
+                        retryItem.attempts++;
+                        pendingRetries.push(retryItem);
+                    }
+                } catch (error) {
+                    retryItem.attempts++;
+                    pendingRetries.push(retryItem);
+                }
+
+                // Atualizar barra de progresso
+                const totalRetries = pendingRetries.length + (failedImports.length - (pendingRetries.length > 0 ? 0 : failedImports.length));
+                const progressPercent = ((retryItem.attempts) / 10) * 100;
+                document.getElementById('retryProgressFill').style.width = progressPercent + '%';
+                document.getElementById('retryAttempt').textContent = retryItem.attempts;
+                document.getElementById('retryPending').textContent = pendingRetries.length;
+                document.getElementById('retryProgressText').textContent = `Tentativa ${retryItem.attempts} de 10 - ${pendingRetries.length} CNPJ(s) pendente(s)`;
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            retryProgressContainer.classList.remove('active');
+
+            importBtn.disabled = false;
+            progressContainer.classList.remove('active');
+            document.getElementById('cnpjInput').value = '';
+
+            if (successCount > 0) {
+                showToast(`${successCount} CNPJ(s) importado(s) com sucesso`);
+                filteredData = [...importedData];
+                updateTable();
+                initializeResizeHandles();
+            }
+
+            if (failedImports.length > 0) {
+                updateFailedImports();
+            }
+        }
+
+                // Update table
+        function updateTable() {
+            const tableSection = document.getElementById('tableSection');
+            const emptyState = document.getElementById('emptyState');
+            const tableBody = document.getElementById('tableBody');
+            const headerRow = document.getElementById('headerRow');
+
+            if (importedData.length === 0) {
+                tableSection.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            const dataCount = document.getElementById('dataCountBadge');
+
+            tableSection.style.display = 'block';
+            emptyState.style.display = 'none';
+            document.getElementById('dataCountBadge').textContent = filteredData.length;
+
+            // Renderizar headers com campos de busca
+            headerRow.innerHTML = columnLabels.map((label, idx) => {
+                const col = columns[idx];
+                const width = columnWidths[col];
+                return `
+                    <th style="width: ${width}px; position: relative;">
+                        <div class="th-content">
+                            <div class="th-label">${label}</div>
+                            ${col !== 'acao' ? `
+                                <div class="th-search">
+                                    <input type="text" placeholder="Buscar..." data-column="${col}">
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="resize-handle" data-column="${col}"></div>
+                    </th>
+                `;
+            }).join('');
+
+            // Adicionar event listeners aos campos de busca após renderizar
+            setTimeout(() => {
+                const searchInputs = document.querySelectorAll('.th-search input');
+                searchInputs.forEach(input => {
+                    input.addEventListener('input', filterTable);
+                });
+            }, 0);
+
+            // Renderizar dados
+            tableBody.innerHTML = filteredData.map(row => `
+                <tr>
+                    ${columns.map((col, idx) => {
+                        const width = columnWidths[col];
+                        if (col === 'acao') {
+                            return `<td style="width: ${width}px;" class="table-actions">
+                                <button class="btn-danger" onclick="deleteRow('${row.id}')">Excluir</button>
+                            </td>`;
+                        }
+                        const value = col === 'fantasia' ? (row[col] || '-') : row[col];
+                        return `<td style="width: ${width}px;" onclick="editCell(event, '${row.id}', '${col}')">${value}</td>`;
+                    }).join('')}
+                </tr>
+            `).join('');
+        }
+
+        // Filtrar tabela
+        function filterTable() {
+            const searchInputs = document.querySelectorAll('.th-search input');
+            const filters = {};
+
+            searchInputs.forEach(input => {
+                const column = input.dataset.column;
+                const value = input.value.toLowerCase();
+                if (value) {
+                    filters[column] = value;
+                }
+            });
+
+            filteredData = importedData.filter(row => {
+                return Object.entries(filters).every(([column, searchValue]) => {
+                    const cellValue = String(row[column] || '').toLowerCase();
+                    return cellValue.includes(searchValue);
+                });
+            });
+
+            updateTable();
+            initializeResizeHandles();
+        }
+
+        // Edit cell
+        function editCell(event, id, field) {
+            if (event.target.tagName === 'INPUT') return;
+
+            const cell = event.target;
+            const currentValue = cell.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentValue;
+
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            input.focus();
+
+            function saveEdit() {
+                const item = importedData.find(d => d.id === id);
+                if (item) {
+                    item[field] = input.value;
+                }
+                filterTable();
+            }
+
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    filterTable();
+                }
+            });
+        }
+
+        // Delete row
+        function deleteRow(id) {
+            importedData = importedData.filter(item => item.id !== id);
+            showToast('Linha removida com sucesso');
+            filterTable();
+        }
+
+        // Update failed imports
+        function updateFailedImports() {
+            let failedSection = document.getElementById('failedImportsSection');
+            
+            if (!failedSection) {
+                failedSection = document.createElement('div');
+                failedSection.id = 'failedImportsSection';
+                failedSection.className = 'glass-box failed-imports-section';
+                document.querySelector('.container').appendChild(failedSection);
+            }
+
+            if (failedImports.length === 0) {
+                failedSection.style.display = 'none';
+                return;
+            }
+
+            failedSection.style.display = 'block';
+            failedSection.innerHTML = `
+                <h2>
+                    Empresas Não Importadas
+                    <span class="count-badge">${failedImports.length}</span>
+                </h2>
+                <div class="failed-items">
+                    ${failedImports.map((item, idx) => `
+                        <div class="failed-item">
+                            <div class="failed-item-info">
+                                <div class="failed-item-cnpj">${formatCNPJ(item.cnpj)}</div>
+                                <div class="failed-item-error">${item.error}</div>
+                            </div>
+                            <button class="failed-item-retry" onclick="retryFailedImport(${idx})">Tentar Novamente</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Retry failed import
+        async function retryFailedImport(index) {
+            const failedItem = failedImports[index];
+            if (!failedItem) return;
+
+            try {
+                const data = await fetchCNPJData(failedItem.cnpj);
+
+                if (data && data.status === 'OK') {
+                    importedData.push({
+                        ...data,
+                        id: `${data.cnpj}-${Date.now()}-retry`
+                    });
+                    failedImports.splice(index, 1);
+                    showToast(`CNPJ ${formatCNPJ(failedItem.cnpj)} importado com sucesso`);
+                    filteredData = [...importedData];
+                    updateTable();
+                    updateFailedImports();
+                    initializeResizeHandles();
+                } else {
+                    showToast(`Erro ao importar CNPJ: ${data?.message || 'Desconhecido'}`, 'error');
+                }
+            } catch (error) {
+                showToast(`Erro ao importar CNPJ: ${error.message}`, 'error');
+            }
+        }
+
+        // Inicializar redimensionamento de colunas
+        function initializeResizeHandles() {
+            const resizeHandles = document.querySelectorAll('.resize-handle');
+
+            resizeHandles.forEach(handle => {
+                handle.addEventListener('mousedown', startResize);
+            });
+        }
+
+        let resizingColumn = null;
+        let startX = 0;
+        let startWidth = 0;
+
+        function startResize(e) {
+            resizingColumn = e.target.dataset.column;
+            startX = e.clientX;
+            startWidth = columnWidths[resizingColumn];
+
+            e.target.classList.add('resizing');
+
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+        }
+
+        function doResize(e) {
+            if (!resizingColumn) return;
+
+            const diff = e.clientX - startX;
+            const newWidth = Math.max(80, startWidth + diff);
+            columnWidths[resizingColumn] = newWidth;
+
+            const ths = document.querySelectorAll('th');
+            const tds = document.querySelectorAll('td');
+
+            ths.forEach(th => {
+                const col = th.querySelector('.resize-handle')?.dataset.column;
+                if (col === resizingColumn) {
+                    th.style.width = newWidth + 'px';
+                }
+            });
+
+            tds.forEach(td => {
+                const colIndex = Array.from(td.parentElement.children).indexOf(td);
+                if (columns[colIndex] === resizingColumn) {
+                    td.style.width = newWidth + 'px';
+                }
+            });
+        }
+
+        function stopResize() {
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+
+            const resizeHandles = document.querySelectorAll('.resize-handle');
+            resizeHandles.forEach(handle => {
+                handle.classList.remove('resizing');
+            });
+
+            resizingColumn = null;
+        }
+
+        // Export modal
+        function openExportModal() {
+            if (importedData.length === 0) {
+                showToast('Nenhum dado para exportar', 'error');
+                return;
+            }
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        // Handle export
+        async function handleExport() {
+            const separator = document.querySelector('input[name="separator"]:checked').value;
+            const exportBtn = document.getElementById('exportBtn');
+            const progressContainer = document.getElementById('exportProgressContainer');
+
+            exportBtn.disabled = true;
+            progressContainer.style.display = 'block';
+
+            for (let i = 0; i <= 100; i += 10) {
+                document.getElementById('exportProgressFill').style.width = i + '%';
+                document.getElementById('exportProgressPercent').textContent = i;
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            const headers = ['CNPJ', 'Razão Social', 'Nome Fantasia', 'Situação', 'Data Abertura', 'CNAE Principal', 'Atividades Secundárias', 'Logradouro', 'Número', 'Complemento', 'Bairro', 'Município', 'UF', 'CEP', 'Telefone', 'Email', 'Porte', 'Natureza Jurídica', 'Capital Social'];
+
+            const rows = importedData.map(item => [
+                item.cnpj,
+                item.nome,
+                item.fantasia || '',
+                item.situacao,
+                item.abertura,
+                item.atividade_principal?.[0]?.text || '',
+                item.atividades_secundarias?.map(a => a.text).join('; ') || '',
+                item.logradouro,
+                item.numero,
+                item.complemento,
+                item.bairro,
+                item.municipio,
+                item.uf,
+                item.cep,
+                item.telefone,
+                item.email,
+                item.porte,
+                item.natureza_juridica,
+                item.capital_social
+            ]);
+
+            const content = [
+                headers.join(separator),
+                ...rows.map(row =>
+                    row.map(cell => {
+                        const cellStr = String(cell || '');
+                        if (separator === ',' && cellStr.includes(',')) {
+                            return `"${cellStr}"`;
+                        }
+                        return cellStr;
+                    }).join(separator)
+                )
+            ].join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `cnpj-dados-${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+
+            showToast('Arquivo exportado com sucesso');
+
+            exportBtn.disabled = false;
+            progressContainer.style.display = 'none';
+            document.getElementById('exportProgressFill').style.width = '0%';
+            document.getElementById('exportProgressPercent').textContent = '0';
+            closeExportModal();
+        }
+
+        // Close modal on outside click
+        document.getElementById('exportModal').addEventListener('click', (e) => {
+            if (e.target.id === 'exportModal') {
+                closeExportModal();
+            }
+        });
+    </script>
+</body>
+</html>
